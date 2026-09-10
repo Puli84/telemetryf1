@@ -1,9 +1,18 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Locutor {
 
     private final Map<String, Long> ultimaVez = new HashMap<>();
+    private final BlockingQueue<String> cola = new LinkedBlockingQueue<>();
+
+    public Locutor() {
+        Thread hilo = new Thread(this::procesarCola, "locutor-voz");
+        hilo.setDaemon(true);
+        hilo.start();
+    }
 
     public void decir(String clave, String texto, long cooldownMs) {
         long ahora = System.currentTimeMillis();
@@ -15,7 +24,17 @@ public class Locutor {
 
         ultimaVez.put(clave, ahora);
         System.out.println(">> " + texto);
-        hablar(texto);
+        cola.offer(texto);
+    }
+
+    private void procesarCola() {
+        while (true) {
+            try {
+                String texto = cola.take();
+                hablar(texto);
+            } catch (InterruptedException ignored) {
+            }
+        }
     }
 
     private void hablar(String texto) {
@@ -25,7 +44,8 @@ public class Locutor {
                 + "$v.SelectVoice('Microsoft Helena Desktop'); "
                 + "$v.Speak('" + limpio + "')";
         try {
-            new ProcessBuilder("powershell", "-Command", cmd).start();
+            Process p = new ProcessBuilder("powershell", "-Command", cmd).start();
+            p.waitFor(); // espera a que termine de hablar antes de sacar el siguiente de la cola
         } catch (Exception ex) {
             System.err.println("Error de voz: " + ex.getMessage());
         }

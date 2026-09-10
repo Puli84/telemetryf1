@@ -10,7 +10,7 @@ public class ReglaVuelta {
         int t = e.ultimaVueltaMs;
         if (t <= 0) return null;          // primera vuelta, aún no hay tiempo
 
-        String tiempo = formatear(t);
+        String tiempo = formatearTiempo(t);
 
         if (mejor == 0 || t < mejor) {
             mejor = t;
@@ -21,7 +21,11 @@ public class ReglaVuelta {
         return "Vuelta en " + tiempo + ". " + String.format("%.2f", diff) + " de tu mejor vuelta" ;
     }
 
-    private String formatear(int ms) {
+    public int getMejor() {
+        return mejor;
+    }
+
+    public static String formatearTiempo(int ms) {
         int min = ms / 60000;
         float seg = (ms % 60000) / 1000f;
         return String.format("%d:%06.3f", min, seg);

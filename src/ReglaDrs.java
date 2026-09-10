@@ -1,29 +1,19 @@
 public class ReglaDrs {
 
-    private boolean avisadoCuenta = false;
-    private boolean avisadoAbierto = false;
+    private boolean avisado = false;
 
     public String evaluar(Estado e) {
-
-        if (e.drsPermitido == 1) {
-            avisadoCuenta = false;
-            if (!avisadoAbierto) {
-                avisadoAbierto = true;
-                return "DRS disponible";
-            }
-            return null;
-        }
-
-        avisadoAbierto = false;
-
-        if (e.drsMetros > 0 && !avisadoCuenta) {
-            avisadoCuenta = true;
-            return "DRS en " + e.drsMetros + " metros";
+        // Avisa una sola vez, lo antes posible (en cuanto aparece la cuenta atrás),
+        // porque para cuando se dice "DRS en X metros" o "disponible" ya se pasó la zona.
+        if (e.drsMetros > 0 && !avisado) {
+            avisado = true;
+            return "Prepara DRS";
         }
 
         if (e.drsMetros == 0) {
-            avisadoCuenta = false;
+            avisado = false;
         }
+
         return null;
     }
 }
