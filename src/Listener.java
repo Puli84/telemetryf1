@@ -10,6 +10,10 @@ public class Listener {
     private static final int LEDS_ABAJO = 60;
     private static Tira tira;
      static int tipoSesion;
+    static Estado estado = new Estado();
+    static ReglaCombustible reglaCombustible = new ReglaCombustible(0.5f);
+    static ReglaBanderas reglaBanderas = new ReglaBanderas();
+    static Locutor locutor = new Locutor();
 
     public static void main(String[] args) throws Exception {
         DatagramSocket socket = new DatagramSocket (
@@ -59,15 +63,23 @@ public class Listener {
 
     private static void leerEstado(ByteBuffer bb, int coche) {
         int base = 29 + coche * 55;
-        int bandera = bb.get ( base + 28 );
-        tira.setBandera ( bandera );
+
+        estado.combustibleVueltas = bb.getFloat(base + 13);
+        estado.bandera  = bb.get ( base + 28 );
+        tira.setBandera ( estado.bandera );
+        System.out.println("Gasolina: " + estado.combustibleVueltas + " | Bandera: " + estado.bandera);
+        String msg = reglaCombustible.evaluar(estado);
+        if (msg != null) locutor.decir("combustible", msg, 5000);
+        String flag = reglaBanderas.evaluar(estado);
+        if (flag != null) locutor.decir("bandera", flag, 0);
     }
 
     private static void leerVuelta(ByteBuffer bb, int coche) {
         int base = 29 + coche * 57;
         int posicion = bb.get ( base + 32 );
-        int vuelta = bb.get ( base + 33 );
-        System.out.println ( "pos=" + posicion + " vuelta=" + vuelta );
+        estado.vueltaActual = bb.get(base + 33);
+
+        System.out.println ( "pos=" + posicion + " vuelta=" + estado.vueltaActual );
     }
 
     private static void leerSesion(ByteBuffer bb) {
