@@ -10,10 +10,24 @@ public class Locutor {
         Long anterior = ultimaVez.get(clave);
 
         if (anterior != null && ahora - anterior < cooldownMs) {
-            return;   // dicho hace poco, callar
+            return;
         }
 
         ultimaVez.put(clave, ahora);
         System.out.println(">> " + texto);
+        hablar(texto);
+    }
+
+    private void hablar(String texto) {
+        String limpio = texto.replace("'", "");
+        String cmd = "Add-Type -AssemblyName System.Speech; "
+                + "$v = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
+                + "$v.SelectVoice('Microsoft Helena Desktop'); "
+                + "$v.Speak('" + limpio + "')";
+        try {
+            new ProcessBuilder("powershell", "-Command", cmd).start();
+        } catch (Exception ex) {
+            System.err.println("Error de voz: " + ex.getMessage());
+        }
     }
 }
