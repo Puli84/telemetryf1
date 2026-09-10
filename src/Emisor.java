@@ -14,7 +14,7 @@ public class Emisor {
 
     public static void main(String[] args) throws Exception {
         socket  = new DatagramSocket();
-        destino = InetAddress.getByName("192.168.1.39");
+        destino = InetAddress.getByName("127.0.0.1");
 
         for (vuelta = 1; vuelta <= 20; vuelta++) {
             combustible -= 1.15f;
