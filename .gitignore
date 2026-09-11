@@ -31,3 +31,6 @@ bin/
 ### IntelliJ (proyecto local) ###
 .idea/
 *.iml
+
+### Datos personales de la app ###
+historial_vueltas.properties

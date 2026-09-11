@@ -23,6 +23,7 @@ public class Listener {
     static ReglaDanos reglaDanos = new ReglaDanos();
     static Locutor locutor = new Locutor();
     static Oyente oyente = new Oyente();
+    static HistorialCircuitos historial = new HistorialCircuitos();
     static long sessionUIDAnterior = 0;
     static int[] pitStatusAnterior = new int[22];
     static String[] nombres = new String[22];
@@ -140,7 +141,7 @@ public class Listener {
         String flag = reglaBanderas.evaluar(estado);
         if (flag != null) locutor.decir("bandera", flag, 0);
         String drs = reglaDrs.evaluar(estado);
-        if(drs!=null)locutor.decir("drs",drs,0);
+        if(drs!=null)locutor.decir("drs",drs,0,Locutor.PRIORIDAD_ALTA);
         String ers = reglaErs.evaluar(estado);
         if (ers != null) locutor.decir("ers", ers, 0);
     }
@@ -172,6 +173,10 @@ public class Listener {
         if (sec != null && estado.safetyCarStatus == 0) locutor.decir("sector", sec, 0);
         String v = reglaVuelta.evaluar(estado);
         if (v != null && estado.safetyCarStatus == 0) locutor.decir("vuelta", v, 0);
+        if (reglaVuelta.esNuevoMejorSesion() && esSesionCarrera(estado.tipoSesion)) {
+            String record = historial.registrar(estado.trackId, estado.ultimaVueltaMs);
+            if (record != null) locutor.decir("record", record, 0);
+        }
         String sancion = reglaSanciones.evaluar(estado);
         if (sancion != null) locutor.decir("sancion", sancion, 0);
         String undercut = reglaUndercut.evaluar(estado);
@@ -185,6 +190,7 @@ public class Listener {
         estado.tipoSesion = bb.get(35) & 0xFF;
         estado.vueltasTotales = bb.get(32) & 0xFF;
         estado.safetyCarStatus = bb.get(153) & 0xFF;
+        estado.trackId = bb.get(36);
     }
     private static void leerEvento(ByteBuffer bb, int miCoche) {
         byte[] cod = new byte[4];
@@ -452,8 +458,14 @@ public class Listener {
                     ? "Tu última vuelta, " + ReglaVuelta.formatearTiempo(estado.ultimaVueltaMs)
                     : "Aún no hay vuelta registrada", 0);
             case "estado" -> anunciarEstado();
+            case "vuelta historica" -> locutor.decir("respuesta", historial.consultar(estado.trackId), 0);
             default -> { } // "nada" (silencio o no reconocido): no decir nada
         }
+    }
+
+    // Tipos de sesión (PacketSessionData, spec F1 25): 15=Carrera, 16=Carrera 2, 17=Carrera 3.
+    private static boolean esSesionCarrera(int tipoSesion) {
+        return tipoSesion == 15 || tipoSesion == 16 || tipoSesion == 17;
     }
 
     private static String limpiar(String s) {

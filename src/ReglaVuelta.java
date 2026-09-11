@@ -14,8 +14,10 @@ public class ReglaVuelta {
 
     private int vueltaAnterior = -1;
     private int mejor = 0;
+    private boolean nuevoMejorSesion = false;
 
     public String evaluar(Estado e) {
+        nuevoMejorSesion = false;
         if (e.vueltaActual == vueltaAnterior) return null;
         vueltaAnterior = e.vueltaActual;
 
@@ -26,6 +28,7 @@ public class ReglaVuelta {
 
         if (mejor == 0 || t < mejor) {
             mejor = t;
+            nuevoMejorSesion = true;
             return String.format(Frases.elegir(MEJOR_VUELTA), tiempo);
         }
 
@@ -35,6 +38,11 @@ public class ReglaVuelta {
 
     public int getMejor() {
         return mejor;
+    }
+
+    // true justo después de una llamada a evaluar() que ha marcado nueva mejor vuelta de sesión.
+    public boolean esNuevoMejorSesion() {
+        return nuevoMejorSesion;
     }
 
     public static String formatearTiempo(int ms) {

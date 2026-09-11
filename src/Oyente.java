@@ -11,7 +11,7 @@ public class Oyente {
            .append("$rec = New-Object System.Speech.Recognition.SpeechRecognitionEngine($culture) } ")
            .append("catch { $rec = New-Object System.Speech.Recognition.SpeechRecognitionEngine }; ")
            .append("$choices = New-Object System.Speech.Recognition.Choices; ")
-           .append("$choices.Add([string[]]('gasolina','posicion','gomas','lider','delante','detras','vuelta','estado')); ")
+           .append("$choices.Add([string[]]('gasolina','posicion','gomas','lider','delante','detras','vuelta','estado','vuelta historica')); ")
            .append("$gb = New-Object System.Speech.Recognition.GrammarBuilder; ")
            .append("$gb.Append($choices); ")
            .append("$grammar = New-Object System.Speech.Recognition.Grammar($gb); ")

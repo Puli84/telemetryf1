@@ -31,4 +31,5 @@ public class Estado {
     public int usableLifeGomas; // vida útil recomendada (vueltas) del compuesto puesto, calculada por el juego
     public int aleronTraseroDano; // % daño alerón trasero
     public int lateralesDano;     // % daño sidepods (laterales)
+    public int trackId;           // circuito de la sesión actual (ver Circuitos.java)
 }
