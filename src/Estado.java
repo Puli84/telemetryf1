@@ -32,4 +32,6 @@ public class Estado {
     public int aleronTraseroDano; // % daño alerón trasero
     public int lateralesDano;     // % daño sidepods (laterales)
     public int trackId;           // circuito de la sesión actual (ver Circuitos.java)
+    public int currentLapInvalid;      // 0 = válida, 1 = invalidada (límites de pista, etc.)
+    public boolean ultimaVueltaInvalida; // snapshot: ¿la vuelta que acaba de cerrarse estaba invalidada?
 }

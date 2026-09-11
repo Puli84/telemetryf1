@@ -12,7 +12,7 @@ public class HistorialCircuitos {
 
     private static final String ARCHIVO = "historial_vueltas.properties";
     private static final DateTimeFormatter FORMATO_FECHA =
-            DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES"));
+            DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.forLanguageTag("es-ES"));
 
     private final Properties datos = new Properties();
 

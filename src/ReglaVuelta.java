@@ -26,6 +26,10 @@ public class ReglaVuelta {
 
         String tiempo = formatearTiempo(t);
 
+        if (e.ultimaVueltaInvalida) {
+            return "Vuelta en " + tiempo + ", invalidada";
+        }
+
         if (mejor == 0 || t < mejor) {
             mejor = t;
             nuevoMejorSesion = true;

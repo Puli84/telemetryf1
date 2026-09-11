@@ -66,6 +66,9 @@ public class Locutor {
 
     private void hablar(String texto) {
         String limpio = texto.replace("'", "");
+        // "boxes" suena mal con la voz en español (sale algo como "baxis");
+        // se reescribe fonéticamente solo para la lectura en voz alta.
+        limpio = limpio.replaceAll("(?i)\\bboxes\\b", "bokses");
         String cmd = "Add-Type -AssemblyName System.Speech; "
                 + "$v = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
                 + "$v.SelectVoice('Microsoft Helena Desktop'); "

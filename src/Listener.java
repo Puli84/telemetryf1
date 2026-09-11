@@ -160,7 +160,15 @@ public class Listener {
         int s2min = bb.get(base + 13)      & 0xFF;
         estado.sector2Ms = s2min * 60000 + s2ms;
         estado.posicion = posicion;
-        estado.vueltaActual = bb.get(base + 33);
+
+        int nuevaVuelta = bb.get(base + 33);
+        if (nuevaVuelta != estado.vueltaActual) {
+            // snapshot: cómo quedó la vuelta que ACABA de cerrarse, antes de pisar el dato con el de la nueva
+            estado.ultimaVueltaInvalida = (estado.currentLapInvalid == 1);
+        }
+        estado.vueltaActual = nuevaVuelta;
+        estado.currentLapInvalid = bb.get(base + 37) & 0xFF;
+
         estado.penalties = bb.get(base + 38) & 0xFF;
         estado.avisos = bb.get(base + 40) & 0xFF;
         estado.pitStatus = bb.get(base + 34) & 0xFF;
