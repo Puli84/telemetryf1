@@ -1,5 +1,17 @@
 public class ReglaSectores {
 
+    private static final String[] MEJORADO = {
+            "%s mejorado",
+            "%s, tu mejor parcial",
+            "%s mejorado, buen ritmo"
+    };
+
+    private static final String[] MAS_LENTO = {
+            "%s, %.2f más lento",
+            "%s, pierdes %.2f",
+            "%s a %.2f de tu mejor"
+    };
+
     private int sectorAnterior = -1;
     private int[] mejores = { 0, 0 };   // mejor S1 y S2 de la sesión
 
@@ -19,10 +31,10 @@ public class ReglaSectores {
 
         if (mejores[idx] == 0 || tiempo < mejores[idx]) {
             mejores[idx] = tiempo;
-            return nombre + " mejorado";
+            return String.format(Frases.elegir(MEJORADO), nombre);
         }
 
-        int diff = tiempo - mejores[idx];
-        return nombre + ", " + String.format("%.2f", diff / 1000f) + " más lento";
+        float diff = (tiempo - mejores[idx]) / 1000f;
+        return String.format(Frases.elegir(MAS_LENTO), nombre, diff);
     }
 }

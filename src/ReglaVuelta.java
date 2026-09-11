@@ -1,5 +1,17 @@
 public class ReglaVuelta {
 
+    private static final String[] MEJOR_VUELTA = {
+            "Vuelta en %s. Mejor vuelta de la sesión",
+            "Vuelta en %s, tu mejor de la sesión",
+            "Vuelta en %s. Nueva mejor vuelta"
+    };
+
+    private static final String[] COMPARADA = {
+            "Vuelta en %s. %.2f de tu mejor vuelta",
+            "Vuelta en %s, a %.2f de tu mejor",
+            "Vuelta en %s. Pierdes %.2f con tu mejor vuelta"
+    };
+
     private int vueltaAnterior = -1;
     private int mejor = 0;
 
@@ -14,11 +26,11 @@ public class ReglaVuelta {
 
         if (mejor == 0 || t < mejor) {
             mejor = t;
-            return "Vuelta en " + tiempo + ". Mejor vuelta de la sesión";
+            return String.format(Frases.elegir(MEJOR_VUELTA), tiempo);
         }
 
         float diff = (t - mejor) / 1000f;
-        return "Vuelta en " + tiempo + ". " + String.format("%.2f", diff) + " de tu mejor vuelta" ;
+        return String.format(Frases.elegir(COMPARADA), tiempo, diff);
     }
 
     public int getMejor() {

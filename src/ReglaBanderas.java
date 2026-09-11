@@ -1,5 +1,3 @@
-import java.util.Random;
-
 public class ReglaBanderas {
 
     private static final String[] VERDE = {
@@ -20,7 +18,6 @@ public class ReglaBanderas {
             "Tenemos amarilla ahí delante"
     };
 
-    private final Random azar = new Random();
     private int anterior = 0;
 
     public String evaluar(Estado e) {
@@ -30,14 +27,10 @@ public class ReglaBanderas {
         anterior = e.bandera;
 
         switch (e.bandera) {
-            case 1:  return elegir(VERDE);
-            case 2:  return elegir(AZUL);
-            case 3:  return elegir(AMARILLA);
+            case 1:  return Frases.elegir(VERDE);
+            case 2:  return Frases.elegir(AZUL);
+            case 3:  return Frases.elegir(AMARILLA);
             default: return null;
         }
-    }
-
-    private String elegir(String[] frases) {
-        return frases[azar.nextInt(frases.length)];
     }
 }

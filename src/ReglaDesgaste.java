@@ -1,6 +1,12 @@
 public class ReglaDesgaste {
 
-    private static final int UMBRAL_DESGASTE = 85; // % a partir del cual la goma se pinta marrón en el juego
+    private static final int UMBRAL_DESGASTE = 15; // % a partir del cual ya se nota pérdida de rendimiento real
+
+    private static final String[] DESGASTE = {
+            "Gomas muy desgastadas, cuidado con el grip",
+            "Neumáticos al límite, ten cuidado",
+            "Gomas muy gastadas, pierdes agarre"
+    };
 
     private boolean avisado = false;
 
@@ -18,7 +24,7 @@ public class ReglaDesgaste {
 
         if (peor >= UMBRAL_DESGASTE) {
             avisado = true;
-            return "Gomas muy desgastadas, cuidado con el grip";
+            return Frases.elegir(DESGASTE);
         }
         return null;
     }

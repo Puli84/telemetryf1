@@ -1,5 +1,11 @@
 public class ReglaDrs {
 
+    private static final String[] PREPARA = {
+            "Prepara DRS",
+            "Zona DRS a la vista",
+            "DRS a la vista, prepárate"
+    };
+
     private boolean avisado = false;
 
     public String evaluar(Estado e) {
@@ -7,7 +13,7 @@ public class ReglaDrs {
         // porque para cuando se dice "DRS en X metros" o "disponible" ya se pasó la zona.
         if (e.drsMetros > 0 && !avisado) {
             avisado = true;
-            return "Prepara DRS";
+            return Frases.elegir(PREPARA);
         }
 
         if (e.drsMetros == 0) {

@@ -25,6 +25,10 @@ public class Estado {
     public String nombreDelante;
     public String nombreDetras;
     public int gapDetrasMs;
+    public int idxDelante = -1;
+    public int idxDetras = -1;
     public int safetyCarStatus; // 0 = sin SC, 1 = SC, 2 = virtual, 3 = vuelta de formación
     public int usableLifeGomas; // vida útil recomendada (vueltas) del compuesto puesto, calculada por el juego
+    public int aleronTraseroDano; // % daño alerón trasero
+    public int lateralesDano;     // % daño sidepods (laterales)
 }

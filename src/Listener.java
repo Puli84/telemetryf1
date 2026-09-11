@@ -20,11 +20,17 @@ public class Listener {
     static ReglaErs reglaErs = new ReglaErs();
     static ReglaUndercut reglaUndercut = new ReglaUndercut();
     static ReglaDesgaste reglaDesgaste = new ReglaDesgaste();
+    static ReglaDanos reglaDanos = new ReglaDanos();
     static Locutor locutor = new Locutor();
+    static Oyente oyente = new Oyente();
     static long sessionUIDAnterior = 0;
     static int[] pitStatusAnterior = new int[22];
     static String[] nombres = new String[22];
+    static int[] compuestoTodos = new int[22];
+    static int[] edadTodos = new int[22];
+    static int[] ultimaVueltaBoxes = new int[22];
     static long botonesAnterior = 0;
+    static volatile boolean escuchando = false;
     // AJUSTAR: pulsa tu botón de push-to-talk, mira en consola "BUTN: 0x........"
     // y pon aquí ese valor exacto.
     static final long PTT_MASK = 0x00100000L;
@@ -86,7 +92,11 @@ public class Listener {
         reglaErs = new ReglaErs();
         reglaUndercut = new ReglaUndercut();
         reglaDesgaste = new ReglaDesgaste();
+        reglaDanos = new ReglaDanos();
         java.util.Arrays.fill(pitStatusAnterior, -1);
+        java.util.Arrays.fill(compuestoTodos, -1);
+        java.util.Arrays.fill(edadTodos, -1);
+        java.util.Arrays.fill(ultimaVueltaBoxes, -1);
         botonesAnterior = 0;
         System.out.println("Nueva sesión detectada, reglas reiniciadas.");
     }
@@ -116,6 +126,13 @@ public class Listener {
         estado.ersEnergia = bb.getFloat(base + 37);
         estado.ersModo = bb.get(base + 41) & 0xFF;
         estado.tyresAgeLaps = bb.get(base + 27) & 0xFF;
+
+        for (int i = 0; i < 22; i++) {
+            int b = 29 + i * 55;
+            compuestoTodos[i] = bb.get(b + 26) & 0xFF; // compuesto visual
+            edadTodos[i] = bb.get(b + 27) & 0xFF;
+        }
+
         tira.setBandera ( estado.bandera );
         System.out.println("Gasolina: " + estado.combustibleVueltas + " | Bandera: " + estado.bandera);
         String msg = reglaCombustible.evaluar(estado);
@@ -182,8 +199,16 @@ public class Listener {
 
                 boolean pttAhora = (botones & PTT_MASK) != 0;
                 boolean pttAntes = (botonesAnterior & PTT_MASK) != 0;
-                if (pttAhora && !pttAntes) {
-                    anunciarEstado();
+                if (pttAhora && !pttAntes && !escuchando) {
+                    escuchando = true;
+                    new Thread(() -> {
+                        try {
+                            String comando = oyente.escuchar(apellidosConocidos());
+                            manejarComando(comando);
+                        } finally {
+                            escuchando = false;
+                        }
+                    }, "ptt-oyente").start();
                 }
                 botonesAnterior = botones;
             }
@@ -315,6 +340,8 @@ public class Listener {
             int base = 29 + i * 57;
             int pitStatus = bb.get(base + 34) & 0xFF;
             if (pitStatus == 1 && pitStatusAnterior[i] != 1) {
+                int vueltaCoche = bb.get(base + 33) & 0xFF;
+                ultimaVueltaBoxes[i] = vueltaCoche;
                 mensaje.append(nombreDe(i)).append(" entra en boxes. ");
             }
             pitStatusAnterior[i] = pitStatus;
@@ -344,12 +371,18 @@ public class Listener {
         estado.nombreDelante = null;
         estado.nombreDetras = null;
         estado.gapDetrasMs = 0;
+        estado.idxDelante = -1;
+        estado.idxDetras = -1;
 
         for (int i = 0; i < 22; i++) {
             if (posiciones[i] == 1) estado.nombreLider = nombreDe(i);
-            if (posiciones[i] == miPos - 1) estado.nombreDelante = nombreDe(i);
+            if (posiciones[i] == miPos - 1) {
+                estado.nombreDelante = nombreDe(i);
+                estado.idxDelante = i;
+            }
             if (posiciones[i] == miPos + 1) {
                 estado.nombreDetras = nombreDe(i);
+                estado.idxDetras = i;
                 estado.gapDetrasMs = deltaLiderMs[i] - miDeltaLider; // aprox., asume misma vuelta
             }
         }
@@ -369,8 +402,113 @@ public class Listener {
         for (int i = 0; i < 4; i++) {
             estado.desgasteGomas[i] = bb.getFloat(base + i * 4);
         }
+        estado.aleronTraseroDano = bb.get(base + 30) & 0xFF;
+        estado.lateralesDano = bb.get(base + 33) & 0xFF;
+
         String desgaste = reglaDesgaste.evaluar(estado);
         if (desgaste != null) locutor.decir("desgaste", desgaste, 0);
+        String danos = reglaDanos.evaluar(estado);
+        if (danos != null) locutor.decir("danos", danos, 0);
+    }
+
+    private static void manejarComando(String comando) {
+        if (comando == null) return; // no se reconoció nada: silencio, no el resumen
+
+        String c = comando.toLowerCase().trim();
+
+        String[] partes = c.split("\\s+");
+        if (partes.length >= 2 && partes[partes.length - 1].equals("boxes")) {
+            String apellido = String.join(" ", java.util.Arrays.copyOf(partes, partes.length - 1));
+            responderBoxesPiloto(apellido);
+            return;
+        }
+
+        switch (c) {
+            case "gasolina" -> locutor.decir("respuesta",
+                    String.format("Gasolina, %.2f vueltas de margen", estado.combustibleVueltas), 0);
+            case "posicion" -> locutor.decir("respuesta", "Vas en posición " + estado.posicion, 0);
+            case "gomas" -> {
+                float peor = 0;
+                for (float d : estado.desgasteGomas) if (d > peor) peor = d;
+                locutor.decir("respuesta",
+                        String.format("Gomas con %d vueltas, %.0f por ciento de desgaste", estado.tyresAgeLaps, peor), 0);
+            }
+            case "lider" -> locutor.decir("respuesta", estado.posicion == 1
+                    ? "Vas líder"
+                    : (estado.nombreLider != null
+                        ? estado.nombreLider + String.format(" lidera, a %.1f segundos", estado.gapLiderMs / 1000f)
+                        : "Aún no hay datos del líder"), 0);
+            case "delante" -> locutor.decir("respuesta", estado.nombreDelante != null
+                    ? estado.nombreDelante
+                        + String.format(" delante, a %.1f segundos. ", estado.deltaCarDelanteMs / 1000f)
+                        + infoGomasRival(estado.idxDelante)
+                    : "No hay nadie delante", 0);
+            case "detras" -> locutor.decir("respuesta", estado.nombreDetras != null
+                    ? estado.nombreDetras
+                        + String.format(" detrás, a %.1f segundos. ", estado.gapDetrasMs / 1000f)
+                        + infoGomasRival(estado.idxDetras)
+                    : "No hay nadie detrás", 0);
+            case "vuelta" -> locutor.decir("respuesta", estado.ultimaVueltaMs > 0
+                    ? "Tu última vuelta, " + ReglaVuelta.formatearTiempo(estado.ultimaVueltaMs)
+                    : "Aún no hay vuelta registrada", 0);
+            case "estado" -> anunciarEstado();
+            default -> { } // "nada" (silencio o no reconocido): no decir nada
+        }
+    }
+
+    private static String limpiar(String s) {
+        String normalizado = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
+        return normalizado.replaceAll("\\p{M}", "");
+    }
+
+    private static String[] apellidosConocidos() {
+        java.util.LinkedHashSet<String> apellidos = new java.util.LinkedHashSet<>();
+        for (String n : nombres) {
+            if (n == null || n.isBlank()) continue;
+            String limpio = limpiar(n).toLowerCase().trim();
+            int idx = limpio.lastIndexOf(' ');
+            apellidos.add(idx >= 0 ? limpio.substring(idx + 1) : limpio);
+        }
+        return apellidos.toArray(new String[0]);
+    }
+
+    private static int buscarPorApellido(String apellidoBuscado) {
+        for (int i = 0; i < nombres.length; i++) {
+            if (nombres[i] == null) continue;
+            String limpio = limpiar(nombres[i]).toLowerCase();
+            if (limpio.endsWith(apellidoBuscado)) return i;
+        }
+        return -1;
+    }
+
+    private static void responderBoxesPiloto(String apellidoBuscado) {
+        int idx = buscarPorApellido(apellidoBuscado);
+        if (idx < 0) {
+            locutor.decir("respuesta", "No encuentro a ese piloto", 0);
+            return;
+        }
+        String nombre = nombreDe(idx);
+        if (ultimaVueltaBoxes[idx] < 0) {
+            locutor.decir("respuesta", nombre + " no ha entrado a boxes todavía", 0);
+        } else {
+            locutor.decir("respuesta", nombre + " entró a boxes en la vuelta " + ultimaVueltaBoxes[idx], 0);
+        }
+    }
+
+    private static String infoGomasRival(int idx) {
+        if (idx < 0 || idx >= compuestoTodos.length || compuestoTodos[idx] < 0) return "";
+        return "Lleva " + nombreCompuesto(compuestoTodos[idx]) + ", " + edadTodos[idx] + " vueltas";
+    }
+
+    private static String nombreCompuesto(int visual) {
+        return switch (visual) {
+            case 16 -> "blandos";
+            case 17 -> "medios";
+            case 18 -> "duros";
+            case 7 -> "intermedios";
+            case 8 -> "de lluvia";
+            default -> "compuesto desconocido";
+        };
     }
 
     private static void anunciarEstado() {

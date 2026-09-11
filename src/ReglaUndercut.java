@@ -3,6 +3,12 @@ public class ReglaUndercut {
     private static final int HUECO_MAX_MS = 3500;    // hueco lo bastante corto como para plantear el undercut
     private static final int GOMAS_MIN_VUELTAS = 8;  // a partir de aquí las gomas ya rinden menos
 
+    private static final String[] UNDERCUT = {
+            "Hueco de %.1f segundos con el de delante, gomas con %d vueltas, valora el undercut",
+            "Tienes %.1f segundos con el de delante y %d vueltas de gomas, piensa en el undercut",
+            "Undercut posible: %.1f segundos con el de delante, gomas con %d vueltas"
+    };
+
     private boolean avisado = false;
 
     public String evaluar(Estado e) {
@@ -18,9 +24,7 @@ public class ReglaUndercut {
                 && e.deltaCarDelanteMs <= HUECO_MAX_MS) {
             avisado = true;
             float segundos = e.deltaCarDelanteMs / 1000f;
-            return String.format(
-                    "Hueco de %.1f segundos con el de delante, gomas con %d vueltas, valora el undercut",
-                    segundos, e.tyresAgeLaps);
+            return String.format(Frases.elegir(UNDERCUT), segundos, e.tyresAgeLaps);
         }
         return null;
     }
