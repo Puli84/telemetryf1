@@ -1,3 +1,5 @@
+package crewchief;
+
 import java.util.Random;
 
 public class Frases {

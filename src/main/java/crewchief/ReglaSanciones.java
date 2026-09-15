@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaSanciones {
 
     private static final String[] SANCION = {

@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaCombustible {
 
     private static final String[] JUSTO_GASOLINA = {

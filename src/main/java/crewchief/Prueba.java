@@ -1,3 +1,5 @@
+package crewchief;
+
 public class Prueba {
     public static void main(String[] args) {
         Estado e = new Estado();

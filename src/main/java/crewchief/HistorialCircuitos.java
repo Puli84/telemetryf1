@@ -1,8 +1,13 @@
+package crewchief;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -59,6 +64,24 @@ public class HistorialCircuitos {
         return String.format("Tu mejor vuelta histórica en %s es %s, del %s",
                 circuito, ReglaVuelta.formatearTiempo(tiempoMs), fecha);
     }
+
+    // Todos los récords guardados, para que la web los liste sin esperar a que
+    // exista un JSON de sesión completo (RegistradorSesion) para ese circuito.
+    public List<Registro> todos() {
+        List<Registro> lista = new ArrayList<>();
+        for (String clave : datos.stringPropertyNames()) {
+            if (!clave.startsWith("track.")) continue;
+            int trackId = Integer.parseInt(clave.substring("track.".length()));
+            String[] partes = datos.getProperty(clave).split(",", 2);
+            int tiempoMs = Integer.parseInt(partes[0]);
+            String fecha = partes.length > 1 ? partes[1] : "";
+            lista.add(new Registro(Circuitos.nombre(trackId), ReglaVuelta.formatearTiempo(tiempoMs), fecha));
+        }
+        lista.sort(Comparator.comparing(Registro::nombreCircuito));
+        return lista;
+    }
+
+    public record Registro(String nombreCircuito, String tiempoStr, String fecha) {}
 
     private int tiempoMsGuardado(int trackId) {
         String valor = datos.getProperty(clave(trackId));

@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaGomas {
 
     private final int minimo;

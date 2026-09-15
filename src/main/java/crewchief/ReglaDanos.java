@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaDanos {
 
     private static final int UMBRAL_DANO = 40; // % de daño a partir del cual conviene entrar a boxes

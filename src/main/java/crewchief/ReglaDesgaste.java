@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaDesgaste {
 
     private static final int UMBRAL_DESGASTE = 15; // % a partir del cual ya se nota pérdida de rendimiento real

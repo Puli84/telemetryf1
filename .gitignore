@@ -15,6 +15,9 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
+### Maven ###
+target/
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -34,3 +37,4 @@ bin/
 
 ### Datos personales de la app ###
 historial_vueltas.properties
+sesiones/

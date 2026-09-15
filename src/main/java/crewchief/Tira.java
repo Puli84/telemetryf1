@@ -1,3 +1,5 @@
+package crewchief;
+
 import javax.swing.*;
 import java.awt.*;
 

@@ -1,7 +1,9 @@
+package crewchief;
+
 public class Estado {
     public float combustibleVueltas;
     public int   bandera;
-    public int   vueltaActual;
+    public int   vueltaActual = -1; // -1 = todavía no ha llegado ningún paquete real (evita registrar una "vuelta 0" fantasma)
     public int ultimaVueltaMs;
     public int   vueltasTotales ;
     public int[] tempGomas = new int[4];   // TI,TD,DI,DD
@@ -34,4 +36,12 @@ public class Estado {
     public int trackId;           // circuito de la sesión actual (ver Circuitos.java)
     public int currentLapInvalid;      // 0 = válida, 1 = invalidada (límites de pista, etc.)
     public boolean ultimaVueltaInvalida; // snapshot: ¿la vuelta que acaba de cerrarse estaba invalidada?
+    public int weather;
+    public int trackTemp;
+    public int airTemp;
+    public int aleronDelantero;
+    public int aleronTrasero;
+    public int difEnAcelerador;
+    public int presionFreno;
+    public int repartoFreno;
 }

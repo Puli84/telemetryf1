@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaErs {
 
     private static final float MAX_ENERGIA = 4_000_000f; // Julios, límite FIA del ERS-K

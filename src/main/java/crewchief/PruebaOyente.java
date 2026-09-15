@@ -1,3 +1,5 @@
+package crewchief;
+
 public class PruebaOyente {
     public static void main(String[] args) {
         System.out.println("Habla ahora (tienes 5 segundos)...");

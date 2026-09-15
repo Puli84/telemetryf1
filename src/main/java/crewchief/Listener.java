@@ -1,3 +1,5 @@
+package crewchief;
+
 import javax.swing.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -24,6 +26,7 @@ public class Listener {
     static Locutor locutor = new Locutor();
     static Oyente oyente = new Oyente();
     static HistorialCircuitos historial = new HistorialCircuitos();
+    static RegistradorSesion registradorSesion = new RegistradorSesion();
     static long sessionUIDAnterior = 0;
     static int[] pitStatusAnterior = new int[22];
     static String[] nombres = new String[22];
@@ -78,6 +81,7 @@ public class Listener {
                 case 8 -> leerClasificacionFinal ( bb );
                 case 10 -> leerDanos ( bb, miCoche );
                 case 12 -> leerTyreSets ( bb, miCoche );
+                case 5 -> leerSetup ( bb, miCoche );
             }
         }
     }
@@ -94,6 +98,7 @@ public class Listener {
         reglaUndercut = new ReglaUndercut();
         reglaDesgaste = new ReglaDesgaste();
         reglaDanos = new ReglaDanos();
+        registradorSesion = new RegistradorSesion();
         java.util.Arrays.fill(pitStatusAnterior, -1);
         java.util.Arrays.fill(compuestoTodos, -1);
         java.util.Arrays.fill(edadTodos, -1);
@@ -162,9 +167,10 @@ public class Listener {
         estado.posicion = posicion;
 
         int nuevaVuelta = bb.get(base + 33);
-        if (nuevaVuelta != estado.vueltaActual) {
+        if (nuevaVuelta != estado.vueltaActual && estado.vueltaActual != -1) {
             // snapshot: cómo quedó la vuelta que ACABA de cerrarse, antes de pisar el dato con el de la nueva
             estado.ultimaVueltaInvalida = (estado.currentLapInvalid == 1);
+            registradorSesion.registrarVuelta(estado, estado.vueltaActual, compuestoTodos[coche]);
         }
         estado.vueltaActual = nuevaVuelta;
         estado.currentLapInvalid = bb.get(base + 37) & 0xFF;
@@ -199,6 +205,18 @@ public class Listener {
         estado.vueltasTotales = bb.get(32) & 0xFF;
         estado.safetyCarStatus = bb.get(153) & 0xFF;
         estado.trackId = bb.get(36);
+        estado.weather = bb.get(29) & 0xFF;
+        estado.trackTemp = bb.get(30);
+        estado.airTemp = bb.get(31);
+    }
+
+    private static void leerSetup(ByteBuffer bb, int coche) {
+        int base = 29 + coche * 50;
+        estado.aleronDelantero = bb.get(base) & 0xFF;
+        estado.aleronTrasero = bb.get(base + 1) & 0xFF;
+        estado.difEnAcelerador = bb.get(base + 2) & 0xFF;
+        estado.presionFreno = bb.get(base + 26) & 0xFF;
+        estado.repartoFreno = bb.get(base + 27) & 0xFF;
     }
     private static void leerEvento(ByteBuffer bb, int miCoche) {
         byte[] cod = new byte[4];
@@ -263,6 +281,7 @@ public class Listener {
                 }
                 locutor.decir("vueltarapida", msg, 0);
             }
+            case "SEND" -> registradorSesion.guardar(estado);
             case "SCAR" -> {
                 int safetyCarType = bb.get(33) & 0xFF;
                 int eventType = bb.get(34) & 0xFF;
@@ -563,6 +582,8 @@ public class Listener {
     }
 
     private static void leerClasificacionFinal(ByteBuffer bb) {
+        registradorSesion.guardar(estado);
+
         int numCars = bb.get(29) & 0xFF;
         String[] podio = new String[4]; // índice 1,2,3 = posición
 
@@ -582,5 +603,3 @@ public class Listener {
         }
     }
 }
-
-

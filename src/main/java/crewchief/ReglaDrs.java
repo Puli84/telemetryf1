@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaDrs {
 
     private static final String[] PREPARA = {

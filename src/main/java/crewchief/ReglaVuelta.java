@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaVuelta {
 
     private static final String[] MEJOR_VUELTA = {

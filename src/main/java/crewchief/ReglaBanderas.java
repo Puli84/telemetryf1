@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaBanderas {
 
     private static final String[] VERDE = {

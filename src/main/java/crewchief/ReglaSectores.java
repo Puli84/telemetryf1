@@ -1,3 +1,5 @@
+package crewchief;
+
 public class ReglaSectores {
 
     private static final String[] MEJORADO = {
