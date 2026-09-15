@@ -157,21 +157,30 @@ public class Listener {
         estado.sector = bb.get(base + 36);
         estado.ultimaVueltaMs = bb.getInt(base);
 
+        // Leídos en variables locales, SIN tocar estado todavía: si la vuelta acaba
+        // de cerrarse, necesitamos los valores de sector1Ms/sector2Ms tal como
+        // quedaron para la vuelta anterior, no los ya reseteados de la nueva.
         int s1ms  = bb.getShort(base + 8)  & 0xFFFF;
         int s1min = bb.get(base + 10)      & 0xFF;
-        estado.sector1Ms = s1min * 60000 + s1ms;
+        int nuevoSector1Ms = s1min * 60000 + s1ms;
 
         int s2ms  = bb.getShort(base + 11) & 0xFFFF;
         int s2min = bb.get(base + 13)      & 0xFF;
-        estado.sector2Ms = s2min * 60000 + s2ms;
+        int nuevoSector2Ms = s2min * 60000 + s2ms;
         estado.posicion = posicion;
 
         int nuevaVuelta = bb.get(base + 33);
         if (nuevaVuelta != estado.vueltaActual && estado.vueltaActual != -1) {
+            System.out.println("DEBUG cierre vuelta " + estado.vueltaActual + "->" + nuevaVuelta
+                    + " | sector1Ms(anterior)=" + estado.sector1Ms + " sector2Ms(anterior)=" + estado.sector2Ms
+                    + " | nuevoSector1Ms(este paquete)=" + nuevoSector1Ms + " nuevoSector2Ms(este paquete)=" + nuevoSector2Ms
+                    + " | ultimaVueltaMs=" + estado.ultimaVueltaMs);
             // snapshot: cómo quedó la vuelta que ACABA de cerrarse, antes de pisar el dato con el de la nueva
             estado.ultimaVueltaInvalida = (estado.currentLapInvalid == 1);
             registradorSesion.registrarVuelta(estado, estado.vueltaActual, compuestoTodos[coche]);
         }
+        estado.sector1Ms = nuevoSector1Ms;
+        estado.sector2Ms = nuevoSector2Ms;
         estado.vueltaActual = nuevaVuelta;
         estado.currentLapInvalid = bb.get(base + 37) & 0xFF;
 

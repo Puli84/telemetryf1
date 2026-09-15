@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${nombreCircuito} + ' — Sesión'">Crew Chief F1 25</title>
+    <style>
+        :root {
+            --bg: #17191f; --bg-elev: #1f232b; --border: #333844;
+            --text: #f2f3f5; --text-dim: #9aa0ac; --text-dimmer: #6b7280;
+            --accent: #5ab7f0; --green: #6fd88f; --red: #e2665b;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; padding: 34px 42px; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; max-width: 900px; }
+        .label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dimmer); font-weight: 600; }
+        .mono { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+        table { border-collapse: collapse; width: 100%; max-width: 900px; }
+        th { text-align: left; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); padding: 0 10px 6px; }
+        td { padding: 8px 10px; font-size: 13px; border-top: 1px solid var(--border); }
+        .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 900px; margin-bottom: 20px; }
+        .stats .card { margin-bottom: 0; padding: 12px 14px; }
+        .vacio { color: var(--text-dim); font-size: 14px; }
+    </style>
+</head>
+<body>
+    <p><a href="/">&larr; Todas las sesiones</a></p>
+
+    <p class="vacio" th:if="${noEncontrada}">No se encontró esa sesión.</p>
+
+    <div th:unless="${noEncontrada}">
+        <h1 style="font-size: 24px; margin: 0 0 4px;" th:text="${nombreCircuito}">Circuito</h1>
+        <p style="color: var(--text-dim); font-size: 12px; margin: 0 0 20px;" th:text="${fecha}"></p>
+
+        <div class="stats">
+            <div class="card"><div class="label" style="font-size: 10px;">Clima</div>
+                <div style="font-size: 14px; font-weight: 600; margin-top: 4px;" th:text="${clima}"></div></div>
+            <div class="card"><div class="label" style="font-size: 10px;">Temp. pista</div>
+                <div class="mono" style="font-size: 14px; font-weight: 600; margin-top: 4px;" th:text="${tempPista} + '°C'"></div></div>
+            <div class="card"><div class="label" style="font-size: 10px;">Temp. aire</div>
+                <div class="mono" style="font-size: 14px; font-weight: 600; margin-top: 4px;" th:text="${tempAire} + '°C'"></div></div>
+            <div class="card" th:if="${setup != null}"><div class="label" style="font-size: 10px;">Setup</div>
+                <div style="font-size: 12px; margin-top: 4px; color: var(--text-dim);"
+                     th:text="'AD ' + ${setup.get('aleronDelantero')} + ' · AT ' + ${setup.get('aleronTrasero')} + ' · RF ' + ${setup.get('repartoFreno')} + '%'"></div></div>
+        </div>
+
+        <div class="card">
+            <div class="label" style="margin-bottom: 12px;">Ritmo por vuelta</div>
+            <div style="display: flex; align-items: flex-end; gap: 6px; height: 110px;">
+                <div th:each="v : ${vueltas}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px;">
+                    <div th:style="'width:100%; border-radius:3px 3px 0 0; height:' + ${v.barPct} + '%; background:' + (${v.valida} ? (${v.esMejor} ? 'var(--green)' : 'var(--accent)') : 'var(--red)') + ';'"></div>
+                    <div style="font-size: 10px; color: var(--text-dimmer);" th:text="${v.numero}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <table>
+                <tr><th>Vuelta</th><th>S1</th><th>S2</th><th>S3</th><th>Total</th><th>Neumático</th><th>Estado</th></tr>
+                <tr th:each="v : ${vueltas}" th:style="${v.valida} ? '' : 'background: rgba(226,102,91,0.08);'">
+                    <td class="mono" th:text="${v.numero}"></td>
+                    <td class="mono" style="color: var(--text-dim);" th:text="${v.s1Str}"></td>
+                    <td class="mono" style="color: var(--text-dim);" th:text="${v.s2Str}"></td>
+                    <td class="mono" style="color: var(--text-dim);" th:text="${v.s3Str}"></td>
+                    <td class="mono" th:style="${v.valida} ? (${v.esMejor} ? 'font-weight:600; color:var(--green);' : 'font-weight:600;') : 'font-weight:600; color:var(--red); text-decoration:line-through;'"
+                        th:text="${v.tiempoStr}"></td>
+                    <td style="color: var(--text-dim);" th:text="${v.neumatico} + ' (' + ${v.vueltasGoma} + ')'"></td>
+                    <td>
+                        <span th:if="${not v.valida}" class="badge" style="color: var(--red); background: rgba(226,102,91,0.14);">INVÁLIDA</span>
+                        <span th:if="${v.valida and v.esMejor}" class="badge" style="color: var(--green); background: rgba(111,216,143,0.14);">MEJOR</span>
+                        <span th:if="${v.valida and not v.esMejor}" style="font-size: 11px; color: var(--text-dimmer);">Válida</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

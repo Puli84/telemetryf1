@@ -10,6 +10,8 @@
         }
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; padding: 34px 42px; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
         h1 { font-size: 22px; margin: 32px 0 4px; }
         h1:first-of-type { margin-top: 0; }
         p.sub { color: var(--text-dim); margin: 0 0 16px; font-size: 13px; }
@@ -28,7 +30,7 @@
     <table th:if="${not #lists.isEmpty(historial)}">
         <tr><th>Circuito</th><th>Mejor vuelta</th><th>Fecha</th></tr>
         <tr th:each="h : ${historial}">
-            <td th:text="${h.nombreCircuito}"></td>
+            <td><a th:href="@{/circuito/{id}(id=${h.trackId})}" th:text="${h.nombreCircuito}"></a></td>
             <td th:text="${h.tiempoStr}" class="mono"></td>
             <td th:text="${h.fecha}" style="color: var(--text-dim);"></td>
         </tr>
@@ -39,16 +41,16 @@
     </p>
 
     <h1>Sesiones completas</h1>
-    <p class="sub">Lo que ya hay guardado en <code>sesiones/</code>. Falta el resto del dashboard (vuelta teórica, config).</p>
+    <p class="sub">Lo que ya hay guardado en <code>sesiones/</code>. Falta configuración editable en la web.</p>
 
     <table th:if="${not #lists.isEmpty(sesiones)}">
         <tr><th>Circuito</th><th>Fecha</th><th>Tipo de sesión</th><th>Vueltas</th><th>Archivo</th></tr>
         <tr th:each="s : ${sesiones}">
-            <td th:text="${s.circuito}"></td>
+            <td><a th:href="@{/circuito/{id}(id=${s.circuitoId})}" th:text="${s.circuito}"></a></td>
             <td th:text="${s.fecha}"></td>
             <td th:text="${s.tipoSesion}"></td>
             <td th:text="${s.numVueltas}"></td>
-            <td th:text="${s.archivo}" style="color: var(--text-dim); font-size: 12px;"></td>
+            <td><a th:href="@{/sesion/{a}(a=${s.archivo})}" th:text="${s.archivo}" style="color: var(--text-dim); font-size: 12px;"></a></td>
         </tr>
     </table>
 

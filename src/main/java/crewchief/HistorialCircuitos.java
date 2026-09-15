@@ -75,13 +75,13 @@ public class HistorialCircuitos {
             String[] partes = datos.getProperty(clave).split(",", 2);
             int tiempoMs = Integer.parseInt(partes[0]);
             String fecha = partes.length > 1 ? partes[1] : "";
-            lista.add(new Registro(Circuitos.nombre(trackId), ReglaVuelta.formatearTiempo(tiempoMs), fecha));
+            lista.add(new Registro(trackId, Circuitos.nombre(trackId), ReglaVuelta.formatearTiempo(tiempoMs), fecha));
         }
         lista.sort(Comparator.comparing(Registro::nombreCircuito));
         return lista;
     }
 
-    public record Registro(String nombreCircuito, String tiempoStr, String fecha) {}
+    public record Registro(int trackId, String nombreCircuito, String tiempoStr, String fecha) {}
 
     private int tiempoMsGuardado(int trackId) {
         String valor = datos.getProperty(clave(trackId));

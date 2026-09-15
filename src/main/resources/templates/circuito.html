@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${nombreCircuito} + ' — Crew Chief'">Crew Chief F1 25</title>
+    <style>
+        :root {
+            --bg: #17191f; --bg-elev: #1f232b; --bg-elev-2: #262b35; --border: #333844;
+            --text: #f2f3f5; --text-dim: #9aa0ac; --text-dimmer: #6b7280;
+            --accent: #5ab7f0; --purple: #b98af0; --green: #6fd88f;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; padding: 34px 42px; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; max-width: 720px; }
+        .label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dimmer); font-weight: 600; }
+        .mono { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+        .pill { display: inline-block; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+                background: var(--bg-elev); color: var(--text-dim); border: 1px solid var(--border); margin-right: 6px; }
+        .pill.active { background: var(--accent); color: var(--bg); border-color: transparent; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th { text-align: left; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); padding: 0 10px 6px; }
+        td { padding: 8px 10px; font-size: 13px; border-top: 1px solid var(--border); }
+        .stat-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 10px 12px; }
+        .vacio { color: var(--text-dim); font-size: 14px; }
+    </style>
+</head>
+<body>
+    <p><a href="/">&larr; Todas las sesiones</a></p>
+
+    <div style="margin-bottom: 18px;">
+        <h1 style="font-size: 24px; margin: 0 0 8px;" th:text="${nombreCircuito}">Circuito</h1>
+        <div th:each="c : ${circuitosConDatos}">
+            <a th:href="@{/circuito/{id}(id=${c.id})}"
+               th:class="${c.id == circuitoId} ? 'pill active' : 'pill'"
+               th:text="${c.nombre}" style="display: inline-block;"></a>
+        </div>
+    </div>
+
+    <p class="vacio" th:if="${sinDatos}">
+        Todavía no hay ninguna vuelta válida guardada en este circuito.
+    </p>
+
+    <div th:unless="${sinDatos}">
+        <div class="card">
+            <div class="label" style="color: var(--purple);">Mejor vuelta</div>
+            <div class="mono" style="font-size: 38px; font-weight: 700; margin: 8px 0 4px; color: var(--purple);"
+                 th:text="${mejorVueltaStr}">1:19.847</div>
+            <div style="font-size: 12px; color: var(--text-dim);">
+                Del <span th:text="${mejorVuelta.fecha}"></span> —
+                <a th:href="@{/sesion/{a}(a=${mejorVuelta.archivo})}">ver esa sesión</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="label" style="color: var(--green);">Vuelta teórica</div>
+            <div th:if="${teoricaCompleta}" style="display: flex; align-items: baseline; gap: 12px; margin: 8px 0 4px;">
+                <div class="mono" style="font-size: 26px; font-weight: 700; color: var(--green);" th:text="${sumaTeoricaStr}">1:19.651</div>
+                <div class="mono" style="font-size: 13px; color: var(--green);" th:text="${deltaStr} + ' disponibles'"></div>
+            </div>
+            <p class="vacio" th:unless="${teoricaCompleta}" style="margin: 8px 0;">
+                Todavía faltan datos de algún sector para calcular la vuelta teórica completa.
+            </p>
+            <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px;">
+                Suma de los tres mejores sectores de siempre en este circuito, aunque sean de sesiones distintas.
+            </div>
+            <table th:if="${not #lists.isEmpty(sectores)}">
+                <tr><th>Sector</th><th>Tiempo</th><th>Vuelta</th><th>Sesión</th></tr>
+                <tr th:each="s : ${sectores}">
+                    <td th:text="${s.nombre}"></td>
+                    <td class="mono" th:text="${s.tiempoStr}"></td>
+                    <td class="mono" th:text="${s.vuelta}"></td>
+                    <td><a th:href="@{/sesion/{a}(a=${s.archivo})}" th:text="${s.fecha}"></a></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card" th:if="${setup != null}">
+            <div class="label">Setup de la vuelta récord</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px;">
+                <div><div class="label" style="font-size: 10px;">Alerón del.</div>
+                     <div class="mono" style="font-size: 17px; font-weight: 600;" th:text="${setup.get('aleronDelantero')}"></div></div>
+                <div><div class="label" style="font-size: 10px;">Alerón tras.</div>
+                     <div class="mono" style="font-size: 17px; font-weight: 600;" th:text="${setup.get('aleronTrasero')}"></div></div>
+                <div><div class="label" style="font-size: 10px;">Dif. aceler.</div>
+                     <div class="mono" style="font-size: 17px; font-weight: 600;" th:text="${setup.get('difEnAcelerador')} + '%'"></div></div>
+                <div><div class="label" style="font-size: 10px;">Reparto freno</div>
+                     <div class="mono" style="font-size: 17px; font-weight: 600;" th:text="${setup.get('repartoFreno')} + '%'"></div></div>
+                <div><div class="label" style="font-size: 10px;">Presión freno</div>
+                     <div class="mono" style="font-size: 17px; font-weight: 600;" th:text="${setup.get('presionFreno')} + '%'"></div></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
